@@ -1,0 +1,50 @@
+{
+  "name": "<lib_name>",
+  "version": "0.0.0",
+  "description": "<description>",
+  "main": "index.js",
+  "types": "index.d.ts",
+  "scripts": {
+    "test": "tap --cov test/*.test.js && npm run typescript",
+    "test:ci": "tap --cov test/*.test.js && npm run typescript && npm run lint",
+    "test:only": "tap --only",
+    "test:unit": "tap test/*.test.js",
+    "lint": "standard | snazzy",
+    "lint:ci": "standard",
+    "typescript": "tsd"
+  },
+  "keywords": [],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/metcoder95/<lib_name>.git"
+  },
+  "readme": "https://github.com/metcoder95/<lib_name>/blob/main/README.md",
+  "bugs": {
+    "url": "https://github.com/metcoder95/<lib_name>/issues"
+  },
+  "author": "metcoder95 <me@metcoder.dev>",
+  "license": "MIT",
+  "devDependencies": {
+    "@types/node": "^14.17.6",
+    "husky": "^7.0.2",
+    "snazzy": "^9.0.0",
+    "standard": "^16.0.3",
+    "tap": "^15.0.10",
+    "tsd": "^0.17.0",
+    "typescript": "^4.4"
+  },
+  "dependencies": {
+  },
+  "tsd": {
+    "directory": "test"
+  },
+  "tap": {
+    "check-coverage": false
+  },
+  "standard": {
+    "ignore": [
+      "*.d.ts",
+      "*.test-d.ts"
+    ]
+  }
+}
