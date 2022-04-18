@@ -1,7 +1,7 @@
 {
-  "name": "<lib_name>",
+  "name": "fastify-racing",
   "version": "0.0.0",
-  "description": "<description>",
+  "description": "Cancel any running operation at the right time on your request handler",
   "main": "index.js",
   "types": "index.d.ts",
   "scripts": {
@@ -16,17 +16,19 @@
   "keywords": [],
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/metcoder95/<lib_name>.git"
+    "url": "git+https://github.com/metcoder95/fastify-racing.git"
   },
-  "readme": "https://github.com/metcoder95/<lib_name>/blob/main/README.md",
+  "readme": "https://github.com/metcoder95/fastify-racing/blob/main/README.md",
   "bugs": {
-    "url": "https://github.com/metcoder95/<lib_name>/issues"
+    "url": "https://github.com/metcoder95/fastify-racing/issues"
   },
   "author": "metcoder95 <me@metcoder.dev>",
   "license": "MIT",
   "devDependencies": {
-    "@types/node": "^14.17.6",
+    "@types/node": "^14.18.13",
+    "fastify": "^3.28.0",
     "husky": "^7.0.2",
+    "nodemon": "^2.0.15",
     "snazzy": "^9.0.0",
     "standard": "^16.0.3",
     "tap": "^15.0.10",
@@ -34,6 +36,8 @@
     "typescript": "^4.4"
   },
   "dependencies": {
+    "fastify-error": "^1.1.0",
+    "fastify-plugin": "^3.0.1"
   },
   "tsd": {
     "directory": "test"
