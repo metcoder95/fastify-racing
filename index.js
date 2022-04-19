@@ -8,15 +8,17 @@ module.exports = fp(
     const controllers = new Map()
     let error
 
+    if (typeof globalOpts !== 'object') {
+      return next(new Errors.BAD_PARAMS('object', typeof globalOpts))
+    }
+
     globalOpts = Object.assign(
       {},
       { handleOnError: true, onRequestClosed: null },
       globalOpts
     )
 
-    if (typeof globalOpts !== 'object') {
-      error = new Errors.BAD_PARAMS('object', typeof globalOpts)
-    } else if (typeof globalOpts.handleOnError !== 'boolean') {
+    if (typeof globalOpts.handleOnError !== 'boolean') {
       error = new Errors.BAD_PARAMS('boolean', typeof globalOpts.handleOnError)
     } else if (
       globalOpts.onRequestClosed != null &&
