@@ -33,7 +33,8 @@
     "standard": "^16.0.3",
     "tap": "^15.0.10",
     "tsd": "^0.17.0",
-    "typescript": "^4.4"
+    "typescript": "^4.4",
+    "undici": "^5.0.0"
   },
   "dependencies": {
     "fastify-error": "^1.1.0",
