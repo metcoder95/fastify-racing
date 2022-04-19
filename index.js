@@ -8,7 +8,7 @@ module.exports = fp(
     const controllers = new Map()
     let error
 
-    if (typeof globalOpts !== 'object') {
+    if (globalOpts != null && typeof globalOpts !== 'object') {
       return next(new Errors.BAD_PARAMS('object', typeof globalOpts))
     }
 
@@ -66,10 +66,6 @@ module.exports = fp(
         : (controllers.set(reqId, new AbortController()),
           controllers.get(reqId))
       const bindedCleaner = cleaner.bind(this)
-
-      if (cb != null && typeof cb !== 'function') {
-        throw new Errors.BAD_PARAMS('function', typeof cb)
-      }
 
       if (cb != null) {
         controller.signal.addEventListener('abort', cb, {
