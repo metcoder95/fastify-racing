@@ -31,29 +31,26 @@ module.exports = fp(
     }
 
     fastify.decorateRequest('race', race)
+    fastify.addHook('onResponse', onResponseCleaner)
 
     return next(error)
 
-    function cleaner (cb) {
-      if (Array.isArray(this.onSend)) {
-        this.onSend.push(onSendCleaner)
-      } else if (this.onSend != null) {
-        this.onSend = [onSendCleaner, this.onSend]
-      } else {
-        this.onSend = onSendCleaner
-      }
+    function onResponseCleaner (request, _reply, done) {
+      if (controllers.has(request.id)) {
+        const { controller, cbs } = controllers.get(request.id)
 
-      function onSendCleaner (request, _reply, payload, done) {
-        if (controllers.has(request.id)) {
-          const controllerSignal = controllers.get(request.id)
-          controllerSignal.removeEventListener('abort', cb, {
-            once: true
-          })
-          controllers.delete(request.id)
+        if (controller.signal.aborted === false) {
+          for (const cb of cbs) {
+            controller.signal.removeEventListener('abort', cb, {
+              once: true
+            })
+          }
         }
 
-        done(null, payload)
+        controllers.delete(request.id)
       }
+
+      done()
     }
 
     function race (opts = globalOpts) {
