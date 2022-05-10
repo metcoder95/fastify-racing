@@ -58,67 +58,89 @@ module.exports = fp(
       const handleError = typeof opts === 'function' ? true : opts.handleOnError
       const cb = typeof opts === 'function' ? opts : opts.onRequestClosed
 
-      const controller = controllers.has(reqId)
-        ? controllers.get(reqId) // eslint-disable-next-line no-undef
-        : (controllers.set(reqId, new AbortController()),
-          controllers.get(reqId))
-      const bindedCleaner = cleaner.bind(this)
+      if (controllers.has(reqId)) {
+        const { controller: ctrl, cbs } = controllers.get(reqId)
 
-      if (cb != null) {
-        controller.signal.addEventListener('abort', cb, {
-          once: true
-        })
+        if (cb != null) {
+          // TODO: handle when socket is destroyed already
+          ctrl.signal.addEventListener('abort', cb, {
+            once: true
+          })
 
-        bindedCleaner(cb)
-      }
-
-      if (cb == null) controller.signal.then = theneable.bind(this)
-
-      if (raw.socket.destroyed) {
-        controller.abort(new Error('Socket already closed'))
-      } else {
-        raw.once('close', () => {
-          if (controller.signal.aborted === false) controller.abort()
-
-          if (controllers.has(reqId)) {
-            const controllerSignal = controllers.get(reqId).signal
-            controllerSignal.removeEventListener('abort', cb, {
-              once: true
-            })
-            controllers.delete(reqId)
-          }
-        })
-
-        if (handleError || cb != null) {
           raw.once('error', err => {
-            if (controller.signal.aborted === false) controller.abort(err)
+            if (controllers.has(reqId)) {
+              const internalCtrl = controllers.get(reqId)
+              if (internalCtrl.signal.aborted === false) internalCtrl.abort(err)
+            }
+          })
+
+          controllers.set(reqId, { controller: ctrl, cbs: cbs.concat(cb) })
+        }
+
+        if (raw.socket.destroyed === true) {
+          process.nextTick(() => ctrl.abort(Errors.SOCKET_CLOSED(reqId)))
+        }
+
+        return ctrl.signal
+      } else {
+        // eslint-disable-next-line no-undef
+        const controller = new AbortController()
+
+        if (cb != null) {
+          controller.signal.addEventListener('abort', cb, {
+            once: true
           })
         }
+
+        if (cb == null) controller.signal.then = theneable.bind(this)
+
+        if (raw.socket.destroyed) {
+          process.nextTick(() => controller.abort(Errors.SOCKET_CLOSED(reqId)))
+        } else {
+          raw.once('close', () => {
+            if (controllers.has(reqId)) {
+              const { controller: ctrl } = controllers.get(reqId)
+              if (ctrl.signal.aborted === false) controller.abort()
+            }
+          })
+
+          if (handleError === true || cb != null) {
+            raw.once('error', err => {
+              if (controllers.has(reqId)) {
+                const { controller: ctrl } = controllers.get(reqId)
+                if (ctrl.signal.aborted === false) controller.abort(err)
+              }
+            })
+          }
+        }
+
+        controllers.set(reqId, { controller, cbs: cb != null ? [cb] : [] })
+
+        return controller.signal
       }
 
-      return controller.signal
+      function theneable (resolve, reject) {
+        const { controller, cbs } = controllers.get(reqId)
 
-      function theneable (resolve) {
+        if (controller.signal.aborted === true) {
+          return reject(Errors.ALREADY_ABORTED(reqId))
+        }
+
         try {
-          const theneableHandler = evt => {
-            resolve(evt)
-
-            if (controllers.has(reqId)) {
-              const controllerSignal = controllers.get(reqId).signal
-              controllerSignal.removeEventListener('abort', cb, {
-                once: true
-              })
-              controllers.delete(reqId)
-            }
-          }
-
-          controller.signal.throwIfAborted()
           controller.signal.addEventListener('abort', theneableHandler, {
             once: true
           })
-          bindedCleaner(theneableHandler)
+
+          controllers.set(reqId, {
+            controller,
+            cbs: cbs.concat(theneableHandler)
+          })
         } catch (err) {
-          resolve(err)
+          reject(err)
+        }
+
+        function theneableHandler (evt) {
+          resolve(evt)
         }
       }
     }
