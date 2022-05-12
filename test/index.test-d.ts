@@ -1,6 +1,6 @@
 /// <reference types="node" />
 import { FastifyPluginCallback } from 'fastify';
-import { FastifyError } from 'fastify-error';
+import { FastifyError } from '@fastify/error';
 
 
 interface AbortEvent {
