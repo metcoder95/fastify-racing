@@ -122,6 +122,10 @@ module.exports = fp(
       function theneable (resolve, reject) {
         const { controller, cbs } = controllers.get(reqId)
 
+        if (raw.socket.destroyed === true) {
+          return reject(Errors.SOCKET_CLOSED(reqId))
+        }
+
         if (controller.signal.aborted === true) {
           return reject(Errors.ALREADY_ABORTED(reqId))
         }

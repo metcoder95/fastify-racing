@@ -6,6 +6,7 @@ const fastify = require('fastify')
 const { request } = require('undici')
 
 const plugin = require('../.')
+const { Errors } = require('../lib')
 
 tap.plan(2)
 
@@ -263,49 +264,57 @@ tap.test('fastify-racing#promise', { only: true }, subtest => {
   )
 
   // TODO: Find how to close the socket after request finished
-  subtest.test('Should throw on already closed request', { skipn: true }, async t => {
-    let first
-    const app = fastify()
+  subtest.test(
+    'Should throw on already closed request',
+    { skip: false },
+    async t => {
+      let first
+      const app = fastify()
 
-    t.plan(5)
+      t.plan(7)
 
-    app.register(plugin)
+      app.register(plugin)
 
-    app.get(
-      '/',
-      {
-        onResponse: (req, _reply, done) => {
-          try {
-            console.log('Triggering failure')
-            first = req.race()
-          } catch (err) { t.ok(err) }
+      app.get(
+        '/',
+        {
+          onResponse: async (req, _reply, done) => {
+            req.raw.destroy()
 
-          t.notOk(first)
-          done()
+            try {
+              first = await req.race()
+            } catch (err) {
+              t.ok(err)
+              t.ok(err instanceof Errors.SOCKET_CLOSED)
+              t.equal(err.code, 'FST_PLUGIN_RACE_SOCKET_CLOSED')
+              t.equal(err.statusCode, 500)
+            }
+
+            t.notOk(first)
+            done()
+          }
+        },
+        (req, _reply) => {
+          return 'Hello World'
         }
-      },
-      (req, _reply) => {
-        process._rawDebug(req.headers)
-        return 'Hello World'
-      }
-    )
+      )
 
-    t.teardown(() => app.close())
+      t.teardown(() => app.close())
 
-    await app.listen()
+      await app.listen()
 
-    const response = await request(
-      `http://localhost:${app.server.address().port}`,
-      {
-        method: 'GET',
-        path: '/'
-      }
-    )
+      const response = await request(
+        `http://localhost:${app.server.address().port}`,
+        {
+          method: 'GET',
+          path: '/'
+        }
+      )
 
-    t.equal(response.statusCode, 200)
-    t.equal(await response.body.text(), 'Hello World')
-    t.end()
-  })
+      t.equal(response.statusCode, 200)
+      t.equal(await response.body.text(), 'Hello World')
+    }
+  )
 
   async function dummy (signal, ms = 3000) {
     await setTimeout(ms, null, { signal, ref: false })
