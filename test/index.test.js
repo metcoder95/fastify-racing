@@ -1,5 +1,5 @@
 'use strict'
-const { setTimeout } = require('timers/promises')
+const { promisify } = require('util')
 
 const tap = require('tap')
 const fastify = require('fastify')
@@ -7,6 +7,8 @@ const { request } = require('undici')
 
 const plugin = require('../.')
 const { Errors } = require('../lib')
+
+const sleep = promisify(setTimeout)
 
 tap.plan(2)
 
@@ -126,7 +128,7 @@ tap.test('fastify-racing#promise', { only: true }, subtest => {
         )
 
         // Allow a full event loop cycle
-        await setTimeout(5)
+        await sleep(5)
         abtCtlr.abort()
       })
   })
@@ -209,7 +211,7 @@ tap.test('fastify-racing#promise', { only: true }, subtest => {
           )
 
           // Allow a full event loop cycle
-          await setTimeout(500)
+          await sleep(500)
           abtCtlr.abort()
         })
     }
@@ -316,7 +318,7 @@ tap.test('fastify-racing#promise', { only: true }, subtest => {
   )
 
   async function dummy (signal, ms = 3000) {
-    await setTimeout(ms, null, { signal, ref: false })
+    await sleep(ms, null, { signal, ref: false })
     return 'hello'
   }
 })
