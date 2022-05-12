@@ -266,7 +266,6 @@ tap.test('fastify-racing#promise', { only: true }, subtest => {
   // TODO: Find how to close the socket after request finished
   subtest.test(
     'Should throw on already closed request',
-    { skip: false },
     async t => {
       let first
       const app = fastify()
