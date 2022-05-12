@@ -91,7 +91,7 @@ module.exports = fp(
         if (cb == null) controller.signal.then = theneable.bind(this)
 
         if (raw.socket.destroyed) {
-          throw new Errors.ALREADY_ABORTED(reqId)
+          throw new Errors.SOCKET_CLOSED(reqId)
         } else {
           raw.once('close', () => {
             if (controllers.has(reqId)) {
