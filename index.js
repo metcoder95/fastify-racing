@@ -31,11 +31,11 @@ module.exports = fp(
     }
 
     fastify.decorateRequest('race', race)
-    fastify.addHook('onResponse', onResponseCleaner)
+    fastify.addHook('onResponse', fastifyRacingCleaner)
 
     return next(error)
 
-    function onResponseCleaner (request, _reply, done) {
+    function fastifyRacingCleaner (request, _reply, done) {
       if (controllers.has(request.id)) {
         const { controller, cbs } = controllers.get(request.id)
 
@@ -61,24 +61,20 @@ module.exports = fp(
       if (controllers.has(reqId)) {
         const { controller: ctrl, cbs } = controllers.get(reqId)
 
+        if (ctrl.signal.aborted === true) {
+          throw new Errors.ALREADY_ABORTED(reqId)
+        }
+
+        if (raw.socket.destroyed === true) {
+          throw new Errors.SOCKET_CLOSED(reqId)
+        }
+
         if (cb != null) {
-          // TODO: handle when socket is destroyed already
           ctrl.signal.addEventListener('abort', cb, {
             once: true
           })
 
-          raw.once('error', err => {
-            if (controllers.has(reqId)) {
-              const internalCtrl = controllers.get(reqId)
-              if (internalCtrl.signal.aborted === false) internalCtrl.abort(err)
-            }
-          })
-
           controllers.set(reqId, { controller: ctrl, cbs: cbs.concat(cb) })
-        }
-
-        if (raw.socket.destroyed === true) {
-          process.nextTick(() => ctrl.abort(Errors.SOCKET_CLOSED(reqId)))
         }
 
         return ctrl.signal
@@ -95,7 +91,7 @@ module.exports = fp(
         if (cb == null) controller.signal.then = theneable.bind(this)
 
         if (raw.socket.destroyed) {
-          process.nextTick(() => controller.abort(Errors.SOCKET_CLOSED(reqId)))
+          throw new Errors.ALREADY_ABORTED(reqId)
         } else {
           raw.once('close', () => {
             if (controllers.has(reqId)) {
@@ -144,7 +140,12 @@ module.exports = fp(
         }
 
         function theneableHandler (evt) {
-          resolve(evt)
+          const event = {
+            type: evt.type,
+            reason: controller.signal?.reason
+          }
+
+          resolve(event)
         }
       }
     }
