@@ -5,7 +5,7 @@ const { Errors } = require('./lib/index')
 
 module.exports = fp(
   function fastifyRacePlugin (fastify, globalOpts, next) {
-    const controllers = new Map()
+    const controllers = new WeakMap()
     let error
 
     if (globalOpts != null && typeof globalOpts !== 'object') {
@@ -36,8 +36,8 @@ module.exports = fp(
     return next(error)
 
     function fastifyRacingCleaner (request, _reply, done) {
-      if (controllers.has(request.id)) {
-        const { controller, cbs } = controllers.get(request.id)
+      if (controllers.has(request)) {
+        const { controller, cbs } = controllers.get(request)
 
         if (controller.signal.aborted === false) {
           for (const cb of cbs) {
@@ -47,7 +47,7 @@ module.exports = fp(
           }
         }
 
-        controllers.delete(request.id)
+        controllers.delete(request)
       }
 
       done()
@@ -58,8 +58,8 @@ module.exports = fp(
       const handleError = typeof opts === 'function' ? true : opts.handleOnError
       const cb = typeof opts === 'function' ? opts : opts.onRequestClosed
 
-      if (controllers.has(reqId)) {
-        const { controller: ctrl, cbs } = controllers.get(reqId)
+      if (controllers.has(this)) {
+        const { controller: ctrl, cbs } = controllers.get(this)
 
         if (ctrl.signal.aborted === true) {
           throw new Errors.ALREADY_ABORTED(reqId)
@@ -74,7 +74,7 @@ module.exports = fp(
             once: true
           })
 
-          controllers.set(reqId, { controller: ctrl, cbs: cbs.concat(cb) })
+          controllers.set(this, { controller: ctrl, cbs: cbs.concat(cb) })
         }
 
         return ctrl.signal
@@ -93,37 +93,43 @@ module.exports = fp(
         if (raw.socket.destroyed) {
           throw new Errors.SOCKET_CLOSED(reqId)
         } else {
-          raw.once('close', () => {
-            if (controllers.has(reqId)) {
-              const { controller: ctrl } = controllers.get(reqId)
-              if (ctrl.signal.aborted === false) controller.abort()
-            }
-          })
+          raw.once(
+            'close',
+            function () {
+              if (controllers.has(this)) {
+                const { controller: ctrl } = controllers.get(this)
+                if (ctrl.signal.aborted === false) controller.abort()
+              }
+            }.bind(this)
+          )
 
           if (handleError === true || cb != null) {
-            raw.once('error', err => {
-              if (controllers.has(reqId)) {
-                const { controller: ctrl } = controllers.get(reqId)
-                if (ctrl.signal.aborted === false) controller.abort(err)
-              }
-            })
+            raw.once(
+              'error',
+              function (err) {
+                if (controllers.has(this)) {
+                  const { controller: ctrl } = controllers.get(this)
+                  if (ctrl.signal.aborted === false) controller.abort(err)
+                }
+              }.bind(this)
+            )
           }
         }
 
-        controllers.set(reqId, { controller, cbs: cb != null ? [cb] : [] })
+        controllers.set(this, { controller, cbs: cb != null ? [cb] : [] })
 
         return controller.signal
       }
 
       function theneable (resolve, reject) {
-        const { controller, cbs } = controllers.get(reqId)
+        const { controller, cbs } = controllers.get(this)
 
         if (raw.socket.destroyed === true) {
-          return reject(Errors.SOCKET_CLOSED(reqId))
+          return reject(Errors.SOCKET_CLOSED(this.id))
         }
 
         if (controller.signal.aborted === true) {
-          return reject(Errors.ALREADY_ABORTED(reqId))
+          return reject(Errors.ALREADY_ABORTED(this.id))
         }
 
         try {
@@ -131,7 +137,7 @@ module.exports = fp(
             once: true
           })
 
-          controllers.set(reqId, {
+          controllers.set(this, {
             controller,
             cbs: cbs.concat(theneableHandler)
           })
