@@ -16,7 +16,7 @@ interface FastifyRacing {
 declare module 'fastify' {
   interface FastifyInstance {
       race(cb: FastifyRacing['onRequestClosed']): void
-      race(opts: FastifyRacing): Promise<AbortEvent>
+      race(opts: Omit<FastifyRacing, 'onRequestClosed'>): Promise<AbortEvent>
       race(): Promise<AbortEvent>
   }
 }
