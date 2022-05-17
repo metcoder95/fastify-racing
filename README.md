@@ -16,11 +16,11 @@ When the `close` event is triggered, the plugin will check if the [`AbortSignal`
 
 Is guaranteed that one and just one `AbortController` and `AbortSignal` will be made per request.
 
-If the request was not aborted during its lifetime, the plugin will remove the `AbortController` and `AbortSignal` from the cache. This by scheduling a callback on the hook `onResponse`.
+If the request was not aborted during its lifetime, the plugin will remove the `AbortController` and `AbortSignal` from the cache. This by scheduling a hook-handler on the hook `onResponse`.
 
 If the request aborted, the same hook will be used for cleaning resources.
 
-A [`WeakMap`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/WeakMap) is used under the hood for caching, ensuring that the `AbortController` and `AbortSignal` instances can be unliked if not needed anymore, and for instance GC'ed.
+A [`WeakMap`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/WeakMap) is used under the hood for caching, ensuring that the `AbortController` and `AbortSignal` instances can be unlinked if not needed anymore, and for instance GC'ed.
 
 ## Setup
 
