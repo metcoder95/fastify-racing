@@ -1,26 +1,223 @@
-/// <reference types="node" />
-import { FastifyPluginCallback } from 'fastify';
-import { FastifyError } from '@fastify/error';
+import { expectType } from 'tsd'
 
+import fastify from 'fastify'
+import plugin, { AbortEvent, FastifyRacingSignal } from '..'
 
-interface AbortEvent {
-    type: 'abort' | string;
-    reason?: FastifyError | Error
-}
+const serverHttp = fastify()
 
-interface FastifyRacing {
-  handleError?: boolean;
-  onRequestClosed?: (evt: AbortEvent) => void;
-}
+serverHttp.register(plugin)
 
-declare module 'fastify' {
-  interface FastifyInstance {
-      race(cb: FastifyRacing['onRequestClosed']): void
-      race(opts: Omit<FastifyRacing, 'onRequestClosed'>): Promise<AbortEvent>
-      race(): Promise<AbortEvent>
+serverHttp.register(plugin, {
+  handleError: true,
+  onRequestClosed: null
+})
+
+serverHttp.get(
+  '/',
+  {
+    preHandler: async (request, _reply) => {
+      const signal = request.race()
+      const signal2 = request.race({
+        handleError: true
+      })
+      const event = await request.race()
+      const event2 = await request.race({
+        handleError: true
+      })
+
+      const asVoid = request.race(evt => {
+        expectType<AbortEvent>(evt)
+      })
+
+      expectType<void>(asVoid)
+      expectType<FastifyRacingSignal>(signal)
+      expectType<AbortEvent>(event)
+      expectType<FastifyRacingSignal>(signal2)
+      expectType<AbortEvent>(event2)
+    }
+  },
+  async (request, reply) => {
+    const signal = request.race()
+    const signal2 = request.race({
+      handleError: true
+    })
+    const event = await request.race()
+    const event2 = await request.race({
+      handleError: true
+    })
+
+    const asVoid = request.race(evt => {
+      expectType<AbortEvent>(evt)
+    })
+
+    expectType<void>(asVoid)
+    expectType<FastifyRacingSignal>(signal)
+    expectType<AbortEvent>(event)
+    expectType<FastifyRacingSignal>(signal2)
+    expectType<AbortEvent>(event2)
   }
-}
+)
 
-declare const FastifyRacing: FastifyPluginCallback<FastifyRacing>;
+// -> Second level
+serverHttp.register(
+  function (fastifyInstance, opts, done) {
+    fastifyInstance.register(plugin)
 
-export default FastifyRacing;
+    fastifyInstance.get(
+      '/',
+      {
+        preHandler: async (request, _reply) => {
+          const signal = request.race()
+          const signal2 = request.race({
+            handleError: true
+          })
+          const event = await request.race()
+          const event2 = await request.race({
+            handleError: true
+          })
+          const asVoid = request.race(evt => {
+            expectType<AbortEvent>(evt)
+          })
+
+          expectType<void>(asVoid)
+          expectType<FastifyRacingSignal>(signal)
+          expectType<AbortEvent>(event)
+          expectType<FastifyRacingSignal>(signal2)
+          expectType<AbortEvent>(event2)
+        }
+      },
+      async (request, reply) => {
+        const signal = request.race()
+        const signal2 = request.race({
+          handleError: true
+        })
+        const event = await request.race()
+        const event2 = await request.race({
+          handleError: true
+        })
+
+        const asVoid = request.race(evt => {
+          expectType<AbortEvent>(evt)
+        })
+
+        expectType<void>(asVoid)
+        expectType<FastifyRacingSignal>(signal)
+        expectType<AbortEvent>(event)
+        expectType<FastifyRacingSignal>(signal2)
+        expectType<AbortEvent>(event2)
+      }
+    )
+
+    done()
+  },
+  { prefix: '/api' }
+)
+
+const serverHttp2 = fastify({ http2: true })
+
+serverHttp2.register(plugin, {
+  handleError: true,
+  onRequestClosed: null
+})
+
+serverHttp2.get(
+  '/',
+  {
+    preHandler: async (request, _reply) => {
+      const signal = request.race()
+      const signal2 = request.race({
+        handleError: true
+      })
+      const event = await request.race()
+      const event2 = await request.race({
+        handleError: true
+      })
+
+      const asVoid = request.race(evt => {
+        expectType<AbortEvent>(evt)
+      })
+
+      expectType<void>(asVoid)
+      expectType<FastifyRacingSignal>(signal)
+      expectType<AbortEvent>(event)
+      expectType<FastifyRacingSignal>(signal2)
+      expectType<AbortEvent>(event2)
+    }
+  },
+  async (request, reply) => {
+    const signal = request.race()
+    const signal2 = request.race({
+      handleError: true
+    })
+    const event = await request.race()
+    const event2 = await request.race({
+      handleError: true
+    })
+
+    const asVoid = request.race(evt => {
+      expectType<AbortEvent>(evt)
+    })
+
+    expectType<void>(asVoid)
+    expectType<FastifyRacingSignal>(signal)
+    expectType<AbortEvent>(event)
+    expectType<FastifyRacingSignal>(signal2)
+    expectType<AbortEvent>(event2)
+  }
+)
+
+// -> First plugin
+serverHttp2.register(
+  function (fastifyInstance, opts, done) {
+    fastifyInstance.register(plugin)
+
+    fastifyInstance.get(
+      '/',
+      {
+        preHandler: async (request, _reply) => {
+          const signal = request.race()
+          const signal2 = request.race({
+            handleError: true
+          })
+          const event = await request.race()
+          const event2 = await request.race({
+            handleError: true
+          })
+
+          const asVoid = request.race(evt => {
+            expectType<AbortEvent>(evt)
+          })
+
+          expectType<void>(asVoid)
+          expectType<FastifyRacingSignal>(signal)
+          expectType<AbortEvent>(event)
+          expectType<FastifyRacingSignal>(signal2)
+          expectType<AbortEvent>(event2)
+        }
+      },
+      async (request, reply) => {
+        const signal = request.race()
+        const signal2 = request.race({
+          handleError: true
+        })
+        const event = await request.race()
+        const event2 = await request.race({
+          handleError: true
+        })
+
+        const asVoid = request.race(evt => {
+          expectType<AbortEvent>(evt)
+        })
+
+        expectType<void>(asVoid)
+        expectType<FastifyRacingSignal>(signal)
+        expectType<AbortEvent>(event)
+        expectType<FastifyRacingSignal>(signal2)
+        expectType<AbortEvent>(event2)
+      }
+    )
+
+    done()
+  },
+  { prefix: '/api' }
+)
