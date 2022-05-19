@@ -1,6 +1,6 @@
 {
   "name": "fastify-racing",
-  "version": "2.0.0",
+  "version": "1.0.0-rc.0",
   "description": "Cancel any running operation at the right time on your request handler",
   "main": "index.js",
   "types": "index.d.ts",
