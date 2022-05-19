@@ -1,6 +1,6 @@
 {
   "name": "fastify-racing",
-  "version": "1.0.0-rc.0",
+  "version": "1.0.0",
   "description": "Cancel any running operation at the right time on your request handler",
   "main": "index.js",
   "types": "index.d.ts",
@@ -11,7 +11,9 @@
     "test:unit": "tap test/*.test.js",
     "lint": "standard | snazzy",
     "lint:ci": "standard",
-    "typescript": "tsd"
+    "typescript": "tsd",
+    "prerelease": "npm run test:ci",
+    "release": "npx standard-version --skip.tag"
   },
   "engines": {
     "node": ">=16.0.0"
