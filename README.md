@@ -1,6 +1,6 @@
 # fastify-racing
 
-[![CI](https://github.com/metcoder95/fastify-racing/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/metcoder95/fastify-racing/actions/workflows/ci.yml) [![CodeQL](https://github.com/metcoder95/fastify-racing/actions/workflows/codeql-analysis.yml/badge.svg)](https://github.com/metcoder95/fastify-racing/actions/workflows/codeql-analysis.yml)
+[![CI](https://github.com/metcoder95/fastify-racing/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/metcoder95/fastify-racing/actions/workflows/ci.yml) [![CodeQL](https://github.com/metcoder95/fastify-racing/actions/workflows/codeql-analysis.yml/badge.svg)](https://github.com/metcoder95/fastify-racing/actions/workflows/codeql-analysis.yml) [![version](https://badge.fury.io/js/fastify-racing.svg)](https://badge.fury.io/js/fastify-racing)
 
 ---
 
