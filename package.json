@@ -18,7 +18,16 @@
   "engines": {
     "node": ">=16.0.0"
   },
-  "keywords": [],
+  "keywords": [
+    "fastify",
+    "racing",
+    "fastify-racing",
+    "http",
+    "server",
+    "abortcontroller",
+    "abort-controller",
+    "abort-signal"
+  ],
   "repository": {
     "type": "git",
     "url": "git+https://github.com/metcoder95/fastify-racing.git"
