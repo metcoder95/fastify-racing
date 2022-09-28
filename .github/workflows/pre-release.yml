@@ -1,0 +1,19 @@
+name: Pre-Release
+on:
+  push:
+    tags:
+      - 'v*.*.*-beta**'
+      - 'v*.*.*-rc**'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    name: Pre-Release Creation
+    steps:
+      - uses: actions/checkout@v1
+      - uses: ncipollo/release-action@v1
+        with:
+          prerelease: true
+          bodyFile: "CHANGELOG.md"

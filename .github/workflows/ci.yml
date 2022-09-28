@@ -6,7 +6,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        node: [16.x, 18.x]
+        node: [14.x, 16.x, 18.x]
     name: Node ${{ matrix.node }}
     steps:
       - uses: actions/checkout@v1
@@ -15,6 +15,4 @@ jobs:
         with:
           node-version: ${{ matrix.node }}
       - run: npm install
-      - run: npm run lint:ci
       - run: npm run test:ci
-      - run: npm run typescript
