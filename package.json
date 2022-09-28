@@ -13,7 +13,7 @@
     "lint:ci": "standard",
     "typescript": "tsd",
     "prerelease": "npm run test:ci",
-    "release": "npx standard-version --skip.tag --no-verify"
+    "release": "npx standard-version --no-verify"
   },
   "engines": {
     "node": ">=16.0.0"
