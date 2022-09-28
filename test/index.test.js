@@ -3,7 +3,7 @@ const { promisify } = require('util')
 
 const tap = require('tap')
 const fastify = require('fastify')
-const { request } = require('undici')
+const { request, Client } = require('undici')
 
 const plugin = require('../.')
 const { Errors } = require('../lib')
@@ -85,8 +85,6 @@ tap.test('fastify-racing#decoration', subtest => {
   )
 })
 
-// TODO: find what's hanging the tests
-// TODO: remove "only" once done
 tap.test('fastify-racing#promise', { only: true }, subtest => {
   subtest.plan(4)
 
@@ -113,7 +111,7 @@ tap.test('fastify-racing#promise', { only: true }, subtest => {
 
     app
       .ready()
-      .then(() => app.listen())
+      .then(() => app.listen({ port: 0 }))
       .then(async () => {
         request(
           `http://localhost:${app.server.address().port}`,
@@ -196,7 +194,7 @@ tap.test('fastify-racing#promise', { only: true }, subtest => {
 
       app
         .ready()
-        .then(() => app.listen())
+        .then(() => app.listen({ port: 0 }))
         .then(async () => {
           request(
             `http://localhost:${app.server.address().port}`,
@@ -220,9 +218,14 @@ tap.test('fastify-racing#promise', { only: true }, subtest => {
   subtest.test(
     'Should reuse AbortController for the single request',
     async t => {
-      let first
+      // eslint-disable-next-line
+      let first, client
       const app = fastify()
 
+      t.teardown(async () => {
+        await client.destroy()
+        await app.close()
+      })
       t.plan(5)
 
       app.register(plugin)
@@ -243,79 +246,81 @@ tap.test('fastify-racing#promise', { only: true }, subtest => {
           t.notOk(second.aborted)
           t.equal(second, first, 'Should reuse the initial controller')
 
-          return 'Hello World'
+          _reply.send('Hello World')
         }
       )
 
-      t.teardown(() => app.close())
+      await app.listen({ port: 0 })
 
-      await app.listen()
+      client = new Client(`http://localhost:${app.server.address().port}`)
 
-      const response = await request(
-        `http://localhost:${app.server.address().port}`,
-        {
-          method: 'GET',
-          path: '/'
-        }
-      )
+      const response = await client.request({
+        method: 'GET',
+        path: '/'
+      })
+
+      const responseBody = await response.body.text()
 
       t.equal(response.statusCode, 200)
-      t.equal(await response.body.text(), 'Hello World')
-      t.end()
+      t.equal(responseBody, 'Hello World')
     }
   )
 
   // TODO: Find how to close the socket after request finished
-  subtest.test(
-    'Should throw on already closed request',
-    async t => {
-      let first
-      const app = fastify()
+  subtest.test('Should throw on already closed request', async t => {
+    // eslint-disable-next-line
+    let first, client
+    const app = fastify()
 
-      t.plan(7)
+    t.teardown(async () => {
+      await client.destroy()
+      await app.close()
+    })
 
-      app.register(plugin)
+    t.plan(7)
 
-      app.get(
-        '/',
-        {
-          onResponse: async (req, _reply, done) => {
-            req.raw.destroy()
+    app.register(plugin)
 
-            try {
-              first = await req.race()
-            } catch (err) {
-              t.ok(err)
-              t.ok(err instanceof Errors.SOCKET_CLOSED)
-              t.equal(err.code, 'FST_PLUGIN_RACE_SOCKET_CLOSED')
-              t.equal(err.statusCode, 500)
-            }
+    app.get(
+      '/',
+      {
+        onResponse: async (req, _reply, done) => {
+          req.raw.destroy()
 
-            t.notOk(first)
-            done()
+          try {
+            first = await req.race()
+          } catch (err) {
+            t.ok(err)
+            t.ok(err instanceof Errors.SOCKET_CLOSED)
+            t.equal(err.code, 'FST_PLUGIN_RACE_SOCKET_CLOSED')
+            t.equal(err.statusCode, 500)
           }
-        },
-        (req, _reply) => {
-          return 'Hello World'
+
+          t.notOk(first)
+          done()
         }
-      )
+      },
+      (req, _reply) => {
+        return 'Hello World'
+      }
+    )
 
-      t.teardown(() => app.close())
+    t.teardown(() => app.close())
 
-      await app.listen()
+    await app.listen({ port: 0 })
 
-      const response = await request(
-        `http://localhost:${app.server.address().port}`,
-        {
-          method: 'GET',
-          path: '/'
-        }
-      )
+    client = new Client(`http://localhost:${app.server.address().port}`)
 
-      t.equal(response.statusCode, 200)
-      t.equal(await response.body.text(), 'Hello World')
-    }
-  )
+    const response = await client.request(
+      {
+        method: 'GET',
+        path: '/'
+      }
+    )
+
+    t.equal(response.statusCode, 200)
+    t.equal(await response.body.text(), 'Hello World')
+  })
 
   async function dummy (signal, ms = 3000) {
     await sleep(ms, null, { signal, ref: false })
