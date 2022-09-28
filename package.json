@@ -39,8 +39,8 @@
   "author": "metcoder95 <me@metcoder.dev>",
   "license": "MIT",
   "devDependencies": {
-    "@types/node": "^14.18.13",
-    "fastify": "^3.28.0",
+    "@types/node": "^18.7.23",
+    "fastify": "^4.6.0",
     "husky": "^7.0.2",
     "nodemon": "^2.0.15",
     "snazzy": "^9.0.0",
@@ -51,8 +51,8 @@
     "undici": "^5.0.0"
   },
   "dependencies": {
-    "@fastify/error": "^2.0.0",
-    "fastify-plugin": "^3.0.1"
+    "@fastify/error": "^3.0.0",
+    "fastify-plugin": "^4.2.1"
   },
   "tsd": {
     "directory": "test"
