@@ -266,16 +266,12 @@ tap.test('fastify-racing#promise', { only: true }, subtest => {
     }
   )
 
-  // TODO: Find how to close the socket after request finished
   subtest.test('Should throw on already closed request', async t => {
     // eslint-disable-next-line
-    let first, client
+    let first
     const app = fastify()
 
-    t.teardown(async () => {
-      await client.destroy()
-      await app.close()
-    })
+    t.teardown(app.close.bind(app))
 
     t.plan(7)
 
@@ -309,7 +305,9 @@ tap.test('fastify-racing#promise', { only: true }, subtest => {
 
     await app.listen({ port: 0 })
 
-    client = new Client(`http://localhost:${app.server.address().port}`)
+    const client = new Client(`http://localhost:${app.server.address().port}`, {
+      pipelining: 0
+    })
 
     const response = await client.request(
       {
