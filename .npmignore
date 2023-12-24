@@ -106,3 +106,5 @@ dist
 # Not necessary for libs
 package-lock.json
 
+# Husky
+# .husky/
