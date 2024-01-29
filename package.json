@@ -41,7 +41,7 @@
   "devDependencies": {
     "@types/node": "^20.1.4",
     "fastify": "^4.6.0",
-    "husky": "^8.0.1",
+    "husky": "^9.0.7",
     "nodemon": "^3.0.1",
     "snazzy": "^9.0.0",
     "standard": "^17.0.0",
