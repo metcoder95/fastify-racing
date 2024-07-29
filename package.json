@@ -39,7 +39,7 @@
   "author": "metcoder95 <me@metcoder.dev>",
   "license": "MIT",
   "devDependencies": {
-    "@types/node": "^20.1.4",
+    "@types/node": "^22.0.0",
     "fastify": "^4.6.0",
     "husky": "^9.0.11",
     "nodemon": "^3.0.1",
