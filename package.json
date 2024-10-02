@@ -52,7 +52,7 @@
   },
   "dependencies": {
     "@fastify/error": "^4.0.0",
-    "fastify-plugin": "^4.2.1"
+    "fastify-plugin": "^5.0.1"
   },
   "tsd": {
     "directory": "test"
