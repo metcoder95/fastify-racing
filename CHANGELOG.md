@@ -2,6 +2,17 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [3.0.0](https://github.com/metcoder95/fastify-racing/compare/v2.0.0...v3.0.0) (2025-07-20)
+
+
+### ⚠ BREAKING CHANGES
+
+* drop v18 (#71)
+
+### Features
+
+* drop v18 ([#71](https://github.com/metcoder95/fastify-racing/issues/71)) ([6c43e92](https://github.com/metcoder95/fastify-racing/commit/6c43e9280390240a68e9522944c17c52df135f67))
+
 ## [2.0.0](https://github.com/metcoder95/fastify-racing/compare/v1.1.0...v2.0.0) (2023-12-24)
 
 
