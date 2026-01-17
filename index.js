@@ -56,7 +56,7 @@ module.exports = fp(
     function race (opts = globalOpts) {
       const { raw, id: reqId } = this
       const handleError = typeof opts === 'function' ? true : opts.handleOnError
-      const cb = typeof opts === 'function' ? opts : opts.onRequestClosed
+      const cb = (typeof opts === 'function' ? opts : opts.onRequestClosed).bind(this)
 
       if (controllers.has(this)) {
         const { controller: ctrl, cbs } = controllers.get(this)
