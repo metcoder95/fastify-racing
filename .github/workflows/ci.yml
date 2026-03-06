@@ -1,18 +1,75 @@
+on:
+  push:
+    branches:
+      - main
+      - next
+      - 'v*'
+  pull_request:
+    paths-ignore:
+      - LICENSE
+      - '*.md'
+
 name: CI
-on: [push, pull_request]
 
 jobs:
-  build:
+  lint:
+    permissions:
+      contents: read
+    name: Lint
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        node: [18.x, 20.x, 21.x]
-    name: Node ${{ matrix.node }}
     steps:
-      - uses: actions/checkout@v4
-      - name: Setup node
-        uses: actions/setup-node@v4
+      - uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3 # v6.0.0
+      - name: Install Node.js
+        uses: actions/setup-node@6044e13b5dc448c55e2357c09f80417699197238 # v6.2.0
         with:
-          node-version: ${{ matrix.node }}
-      - run: npm install
-      - run: npm run test:ci
+          node-version: v22.x
+          cache: 'npm'
+          cache-dependency-path: package.json
+
+      - name: Install dependencies
+        run: npm install
+      - name: Check linting
+        run: npm run lint:ci
+
+  tests:
+    permissions:
+      contents: read
+    name: Tests
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        node-version: [20.x, 22.x, 24.x]
+    runs-on: ${{matrix.os}}
+    steps:
+      - uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3 # v6.0.0
+        with:
+          persist-credentials: false
+
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@6044e13b5dc448c55e2357c09f80417699197238 # v6.2.0
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'npm'
+          cache-dependency-path: package.json
+
+      - name: Install Dependencies
+        run: npm install
+
+      - name: Run Tests
+        run: npm run test:ci
+
+  automerge:
+    if: >
+      github.event_name == 'pull_request' && github.event.pull_request.user.login == 'dependabot[bot]'
+    needs:
+      - tests
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - name: Merge Dependabot PR
+        uses: fastify/github-action-merge-dependabot@1b2ed42db8f9d81a46bac83adedfc03eb5149dff # v3.11.2
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
