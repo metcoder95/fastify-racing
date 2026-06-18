@@ -105,3 +105,4 @@ dist
 
 # Not necessary for libs
 package-lock.json
+.worktrees
