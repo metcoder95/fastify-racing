@@ -2,6 +2,17 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [4.0.0](https://github.com/metcoder95/fastify-racing/compare/v3.0.0...v4.0.0) (2026-06-18)
+
+
+### ⚠ BREAKING CHANGES
+
+* drop support for v20 (#87)
+
+### Features
+
+* drop support for v20 ([#87](https://github.com/metcoder95/fastify-racing/issues/87)) ([360c554](https://github.com/metcoder95/fastify-racing/commit/360c554a00a98ecc8de6f65e7ddcfdec281481b2))
+
 ## [3.0.0](https://github.com/metcoder95/fastify-racing/compare/v2.0.0...v3.0.0) (2025-07-20)
 
 
