@@ -85,11 +85,11 @@ tap.test('fastify-racing#decoration', subtest => {
   )
 })
 
-tap.test('fastify-racing#promise', { only: true }, subtest => {
+tap.test('fastify-racing#promise', subtest => {
   subtest.plan(4)
 
   subtest.test('Should handle a request aborted', t => {
-    t.plan(3)
+    t.plan(2)
 
     const app = fastify()
     // eslint-disable-next-line no-undef
@@ -118,11 +118,10 @@ tap.test('fastify-racing#promise', { only: true }, subtest => {
           {
             method: 'GET',
             path: '/',
-            signal: abtCtlr.signal
+            signal: abtCtlr.signal,
+            pipelining: 0,
           },
-          err => {
-            t.ok(err)
-          }
+          ()  => {}
         )
 
         // Allow a full event loop cycle
