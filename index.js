@@ -93,7 +93,7 @@ module.exports = fp(
         if (raw.socket.destroyed) {
           throw new Errors.SOCKET_CLOSED(reqId)
         } else {
-          raw.once(
+          raw.socket.once(
             'close',
             function () {
               if (controllers.has(this)) {
